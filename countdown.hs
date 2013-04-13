@@ -1,8 +1,14 @@
--- Find solutions to the Countdown game.
--- Based on Graham Huttons paper
+{--
+
+Find solutions to the Countdown game.
+Based on Graham Huttons paper and lectures
+
+--}
+
 module Main
 where
 
+import Data.Maybe
 import Data.List
 import Data.Function(on)
 import Data.Ord(comparing)
@@ -15,18 +21,13 @@ import System.Random
 
 -------------------------------------------------------------------------------
 
-qsort :: Ord a => [a] -> [a]
-qsort [] = []
-qsort (x:xs) = qsort left ++ [x] ++ (qsort right)
-  where left  = [y | y <- xs, y <= x]
-        right = [y | y <- xs, y > x]
-
 groupSubsByLen :: [[a]] -> [[[a]]]
 groupSubsByLen xs = groupBy ((==) `on` length) $ sortBy (compare `on` length) xs
 
 sortByLen :: [[a]] -> [[a]]
 sortByLen = sortBy (comparing length)
 
+-- Sort into sublists (there is a native version subsequences)
 sublists :: [a] -> [[a]]
 sublists [] = [[]]
 sublists (x:xs) = subs
@@ -36,6 +37,12 @@ sublists (x:xs) = subs
 subsequencePermutations :: [a] -> [[a]]
 subsequencePermutations [] = []
 subsequencePermutations xs@(h:t) = [y | x <- sublists xs, y <- permutations x]
+
+qsort :: Ord a => [a] -> [a]
+qsort [] = []
+qsort (x:xs) = qsort left ++ [x] ++ (qsort right)
+  where left  = [y | y <- xs, y <= x]
+        right = [y | y <- xs, y > x]
 
 -------------------------------------------------------------------------------
 
@@ -58,4 +65,19 @@ applyOp Div  x y = div x y
 -- Recursive data type either value or application
 -- 1 + 2 -> Ap Add (Val 1) (Val 2)
 data Expr = Val Int | Ap Op Expr Expr
+
+-- An expression can fail if it falls outside of our initial constraints
+-- i.e if it is zero or a fraction etc
+eval :: Expr -> [Int]
+eval (Val n)    = [n | n > 0 ]
+eval (Ap o e1 e2) = [applyOp o x y | x <- eval e1
+                                   , y <- eval e2
+                                   , valid o x y]
+
+-- Same thing using Maybe type and do notation (Exercise)
+-- maybeEval :: Expr -> Maybe Int
+-- maybeEval (Val n) = if (n > 0) then Just n else Nothing
+
+-- All possible ways to split a list into two non empty parts
+-- splitNums xs =
 

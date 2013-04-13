@@ -21,6 +21,24 @@ import System.Random
 
 -------------------------------------------------------------------------------
 
+type Target = Int
+type Choices = [Int]
+
+-- TODO shuffle numbers so they get selected randomly
+
+-- Select numbers n being the number of big numbers to take
+-- n must be less than 4 so encode this in the logic here TODO!
+getNumbers :: Int -> [Int]
+getNumbers n = take n large ++ take (6 - n) small
+  where large = [25,50,75,100]
+        small = concat $ replicate 2 [1..10]
+
+-- Create a new countdown problem
+-- generateProblem :: (Choices, Target)
+-- generateProblem =
+
+-------------------------------------------------------------------------------
+
 groupSubsByLen :: [[a]] -> [[[a]]]
 groupSubsByLen xs = groupBy ((==) `on` length) $ sortBy (compare `on` length) xs
 

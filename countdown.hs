@@ -15,6 +15,7 @@ import Data.Ord(comparing)
 
 import System.Random
 
+
 -- Rules
 
 -- Intermediate results must be positive natural numbers

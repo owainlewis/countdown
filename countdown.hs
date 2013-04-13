@@ -15,11 +15,8 @@ import Data.Ord(comparing)
 
 import System.Random
 
-
 -- Rules
-
 -- Intermediate results must be positive natural numbers
-
 -------------------------------------------------------------------------------
 
 type Target = Int
@@ -75,6 +72,12 @@ valid Sub  x y = x < y
 valid Mult x y = True
 valid Div  x y = x `mod` y == 0
 
+instance Show Op where
+  show Add   = "+"
+  show Sub   = "-"
+  show Mult  = "*"
+  show Div   = "/"
+
 applyOp :: Op -> Int -> Int -> Int
 applyOp Add  x y = x + y
 applyOp Sub  x y = x - y
@@ -85,6 +88,11 @@ applyOp Div  x y = div x y
 -- 1 + 2 -> Ap Add (Val 1) (Val 2)
 data Expr = Val Int | Ap Op Expr Expr
 
+instance Show Expr where
+  show (Val v) = show v
+  show (Ap op x y) = let space = " " in
+    show x ++ space ++ show op ++ space ++ show y
+
 -- An expression can fail if it falls outside of our initial constraints
 -- i.e if it is zero or a fraction etc
 eval :: Expr -> [Int]
@@ -94,9 +102,13 @@ eval (Ap o e1 e2) = [applyOp o x y | x <- eval e1
                                    , valid o x y]
 
 -- Same thing using Maybe type and do notation (Exercise)
+
 -- maybeEval :: Expr -> Maybe Int
 -- maybeEval (Val n) = if (n > 0) then Just n else Nothing
 
 -- All possible ways to split a list into two non empty parts
--- splitNums xs =
+split' :: [a] -> [([a],[a])]
+split' [] = []
+split' [_] = []
+split' (x:xs) = ([x],xs):[(x:y, ys)|(y,ys)<-split'(xs)]
 

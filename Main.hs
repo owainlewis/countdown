@@ -140,7 +140,7 @@ combine :: Expr -> Expr -> [Expr]
 combine l r = [ Ap o l r | o <- [Mult, Add, Sub, Div] ]
 
 -- all possible expressions given a list of Int
--- expands the search space to all possible combintations
+-- expands the search space to all possible combinations
 exprs :: [Int] -> [Expr]
 exprs []  = []
 exprs [x] = [Val x]

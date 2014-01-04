@@ -1,7 +1,12 @@
 -- Solver for countdown word games
 
-module Words
-where
+module Words(
+    getWords
+  , dictWords
+  , noWords
+  , vowels
+  , consonant
+)where
 
 import Control.Applicative
 import Control.Monad

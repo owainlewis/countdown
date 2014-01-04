@@ -25,7 +25,7 @@ combinations n xs = [ xs !! i : x | i <- [0..(length xs)-1]
 -- All ways to combine the letters in a sequence
 -- TODO check this with some tests and make it faster
 allPerms :: [a] -> [[a]]
-allPerms xs = concat [f y xs | y <- [2..(length xs)]]
+allPerms xs = concat [f y xs | y <- [4..(length xs)]]
     where f n w = concatMap permutations $ combinations n w
 
 -- Load the dictionary and clean it by trimming and normalizing to lowercase

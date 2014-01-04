@@ -1,11 +1,8 @@
 -- Solver for countdown word games
 
 module Words(
-    getWords
-  , dictWords
-  , noWords
-  , vowel
-  , consonant
+    solve
+  , bestWord
 ) where
 
 import Data.Char ( toLower, isSpace )
@@ -27,6 +24,7 @@ combinations n xs = [ xs !! i : x | i <- [0..(length xs)-1]
 
 -- All ways to combine the letters in a sequence
 -- TODO check this with some tests and make it faster
+allPerms :: [a] -> [[a]]
 allPerms xs = concat [f y xs | y <- [2..(length xs)]]
     where f n w = concatMap permutations $ combinations n w
 
@@ -142,7 +140,7 @@ bestWord letters =
     liftM (maxWord . nub) $ solve letters
     where maxWord = maximumBy (compare `on` length)
 
--- bestWord test >> "anodes"
+-- bestWord "ojonased" >> "anodes"
 test = "ojonased"
 
 -- END

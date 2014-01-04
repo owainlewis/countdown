@@ -3,6 +3,8 @@
 module Words
 where
 
+import Control.Applicative
+import Control.Monad
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -23,26 +25,32 @@ consonant =
                     then xs else x:xs) [] letters
     where letters = ['a'..'z']
 
--- Prefix Trees
-
+-- Prefix Trees / Trie
 data Trie a = Trie (Map a (Trie a)) Bool
   deriving (Show)
 
-empty    :: Ord a => Trie a
-empty = Trie Map.empty False
+emptyTrie    :: Ord a => Trie a
+emptyTrie = Trie Map.empty False
 
-insert   :: Ord a => [a] -> Trie a -> Trie a
-insert []      (Trie m _) = Trie m True
+insert :: Ord a => [a] -> Trie a -> Trie a
+insert [] (Trie m _) = Trie m True
 insert (c : w) (Trie m b) =
     case Map.lookup c m of
-        Nothing -> insert (c : w) $ Trie (Map.insert c empty m) b
+        Nothing -> insert (c : w) $ Trie (Map.insert c emptyTrie m) b
         Just tr -> Trie (Map.insert c (insert w tr) m) b
 
-find     :: Ord a => [a] -> Trie a -> Bool
+find :: Ord a => [a] -> Trie a -> Bool
 find []      (Trie _ b) = b
-find (c : w) (Trie m _) = maybe False (find w) $ Map.lookup c m
+find (c : w) (Trie m _) =
+    maybe False (find w) $ Map.lookup c m
 
+-- Word completion helper
 complete :: Ord a => [a] -> Trie a -> [[a]]
 complete [] (Trie m b) = [[] | b] ++ concat [map (c :) (complete [] tr) | (c, tr) <- Map.toList m]
 complete (c : w) (Trie m _) =
     maybe [] (map (c :) . complete w) $ Map.lookup c m
+
+-- Build a large Trie from a sequence of strings (i.e our dict)
+foldTrie :: Ord a => [[a]] -> Trie a
+foldTrie [] = emptyTrie
+foldTrie xs = foldr (\y ys -> insert y ys) emptyTrie xs

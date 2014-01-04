@@ -16,6 +16,10 @@ getWords path = do
 dictWords :: IO [String]
 dictWords = getWords "/usr/share/dict/words"
 
+-- The number of words in the dictionary
+noWords :: IO Int
+noWords = liftM length $ dictWords
+
 vowels :: [Char]
 vowels = ['a', 'e', 'i', 'o', 'u']
 
@@ -54,3 +58,7 @@ complete (c : w) (Trie m _) =
 foldTrie :: Ord a => [[a]] -> Trie a
 foldTrie [] = emptyTrie
 foldTrie xs = foldr (\y ys -> insert y ys) emptyTrie xs
+
+-- Builds the Trie from our dictionary
+buildDictTrie :: IO (Trie Char)
+buildDictTrie = (liftM foldTrie) $ dictWords

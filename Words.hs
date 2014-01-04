@@ -129,7 +129,8 @@ fromMaybeList (x:xs) = case x of
 solve :: String -> IO [String]
 solve letters = do
     trie <- buildDictTrie
-    let result = map (\p -> if (find p trie) then Just p else Nothing) $ allPerms letters
+    let result = map (\p -> if (find p trie) then Just p 
+                                             else Nothing) $ allPerms letters
     return $ fromMaybeList result
 
 -- Find the best solution word in the countdown words round

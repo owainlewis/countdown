@@ -142,6 +142,5 @@ bestWord letters =
     where maxWord = maximumBy (compare `on` length)
 
 -- bestWord "ojonased" >> "anodes"
-test = "ojonased"
 
 -- END

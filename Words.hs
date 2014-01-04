@@ -14,6 +14,9 @@ import System.Random ( randomRIO )
 import Data.List (tails, nub, maximumBy)
 import Data.Function (on)
 
+data Game = Game [String] 
+    deriving ( Show )
+
 trim :: String -> String
 trim = f . f where f = reverse . dropWhile isSpace
 
@@ -48,8 +51,6 @@ containsWord wrd = do
     allWords <- dictWords
     let r = wrd `elem` allWords
     return r
-
-data Game = Game [String] deriving ( Show )
 
 randomFromList :: [a] -> IO a
 randomFromList xs =

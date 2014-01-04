@@ -44,17 +44,14 @@ consonant =
 infStream :: [a] -> [IO a]
 infStream f = [randomFromList f | x <- [1..]]
 
-randomVowels     :: [IO Char]
-randomConsonants :: [IO Char]
-
-randomVowels     = infStream vowel
-randomConsonants = infStream consonant
+getNRandom :: Int -> [a] -> IO [a]
+getNRandom n xs = sequence $ replicate n $ randomFromList xs
 
 -- getRandomGame :: [[IO Char]]
 getRandomGame = do
-  v <- take 3 randomVowels
-  c <- take 6 randomConsonants
-  return $ v ++ c -- ?? How to do this with IO lists?
+  v <- getNRandom 3 vowel
+  c <- getNRandom 6 consonant
+  return v
 
 -- Prefix Trees / Trie
 data Trie a = Trie (Map a (Trie a)) Bool

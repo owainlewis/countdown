@@ -47,11 +47,12 @@ infStream f = [randomFromList f | x <- [1..]]
 getNRandom :: Int -> [a] -> IO [a]
 getNRandom n xs = sequence $ replicate n $ randomFromList xs
 
--- getRandomGame :: [[IO Char]]
+getRandomGame :: IO [Char]
 getRandomGame = do
   v <- getNRandom 3 vowel
   c <- getNRandom 6 consonant
-  return v
+  let result = v ++ c
+  return result
 
 -- Prefix Trees / Trie
 data Trie a = Trie (Map a (Trie a)) Bool
@@ -92,3 +93,16 @@ permutations [] = [[]]
 permutations xs = [ y:zs | (y,ys) <- select xs, zs <- permutations ys]
   where select []     = []
         select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]
+
+-- There is an idiomatic way to do this with flatmap like Scala but I'm can't remember what it is
+fromMaybeList :: [Maybe a] -> [a]
+fromMaybeList []     = []
+fromMaybeList (x:xs) = case x of
+  Just v -> v : fromMaybeList xs
+  Nothing -> fromMaybeList xs
+
+-- This isn't working yet but will solve a brute force approach for a given length (anagram basically)
+solve xs = do
+  trie <- buildDictTrie
+  let result = map (\p -> if (find p trie) then Just p else Nothing) $ permutations xs
+  return $ fromMaybeList result

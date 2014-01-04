@@ -8,23 +8,47 @@ module Words(
   , consonant
 ) where
 
+import Data.Char ( toLower, isSpace )
 import Control.Applicative
 import Control.Monad
 import Data.Map ( Map )
 import qualified Data.Map as Map
 import System.Random ( randomRIO )
+import Data.List (tails, nub, maximumBy)
+import Data.Function (on)
 
+trim :: String -> String
+trim = f . f where f = reverse . dropWhile isSpace
+
+combinations :: Int -> [a] -> [[a]]
+combinations 0 _ = [[]]
+combinations n xs = [ xs !! i : x | i <- [0..(length xs)-1]
+                                  , x <- combinations (n-1) (drop (i+1) xs) ]
+
+-- All ways to combine the letters in a sequence
+-- TODO check this with some tests and make it faster
+allPerms xs = concat [f y xs | y <- [2..(length xs)]]
+    where f n w = concatMap permutations $ combinations n w
+
+-- Load the dictionary and clean it by trimming and normalizing to lowercase
 getWords :: FilePath -> IO [String]
 getWords path = do
     contents <- readFile path
-    return (lines contents)
+    let clean = map (strLower . trim) $ lines contents
+    return $ clean
+    where strLower = map toLower
 
 dictWords :: IO [String]
-dictWords = getWords "/usr/share/dict/words"
+dictWords = getWords "wrds.txt"
 
 -- The number of words in the dictionary
 noWords :: IO Int
 noWords = liftM length $ dictWords
+
+containsWord wrd = do
+    allWords <- dictWords
+    let r = wrd `elem` allWords
+    return r
 
 data Game = Game [String] deriving ( Show )
 
@@ -47,16 +71,16 @@ infStream f = [randomFromList f | x <- [1..]]
 getNRandom :: Int -> [a] -> IO [a]
 getNRandom n xs = sequence $ replicate n $ randomFromList xs
 
-getRandomGame :: IO [Char]
+getRandomGame :: IO String
 getRandomGame = do
-  v <- getNRandom 3 vowel
-  c <- getNRandom 6 consonant
-  let result = v ++ c
-  return result
+    v <- getNRandom 3 vowel
+    c <- getNRandom 6 consonant
+    let result = v ++ c
+    return result
 
 -- Prefix Trees / Trie
 data Trie a = Trie (Map a (Trie a)) Bool
-  deriving (Show)
+    deriving (Show)
 
 emptyTrie    :: Ord a => Trie a
 emptyTrie = Trie Map.empty False
@@ -88,21 +112,37 @@ foldTrie xs = foldr (\y ys -> insert y ys) emptyTrie xs
 buildDictTrie :: IO (Trie Char)
 buildDictTrie = (liftM foldTrie) $ dictWords
 
+-- Permutations of a given length
 permutations :: [a] -> [[a]]
 permutations [] = [[]]
 permutations xs = [ y:zs | (y,ys) <- select xs, zs <- permutations ys]
-  where select []     = []
-        select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]
+    where select []     = []
+          select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]
 
 -- There is an idiomatic way to do this with flatmap like Scala but I'm can't remember what it is
 fromMaybeList :: [Maybe a] -> [a]
 fromMaybeList []     = []
 fromMaybeList (x:xs) = case x of
-  Just v -> v : fromMaybeList xs
-  Nothing -> fromMaybeList xs
+    Just v -> v : fromMaybeList xs
+    Nothing -> fromMaybeList xs
 
--- This isn't working yet but will solve a brute force approach for a given length (anagram basically)
-solve xs = do
-  trie <- buildDictTrie
-  let result = map (\p -> if (find p trie) then Just p else Nothing) $ permutations xs
-  return $ fromMaybeList result
+-- This works brute force but isn't making use of the Trie as of yet and is therefore
+-- fairly slow
+solve :: String -> IO [String]
+solve letters = do
+    trie <- buildDictTrie
+    let result = map (\p -> if (find p trie) then Just p else Nothing) $ allPerms letters
+    return $ fromMaybeList result
+
+-- Find the best solution word in the countdown words round
+-- This is fairly slow because we're not using the Trie properly but fast enough to
+-- be classed as working at this point
+bestWord :: String -> IO [Char]
+bestWord letters =
+    liftM (maxWord . nub) $ solve letters
+    where maxWord = maximumBy (compare `on` length)
+
+-- bestWord test >> "anodes"
+test = "ojonased"
+
+-- END

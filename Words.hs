@@ -4,14 +4,15 @@ module Words(
     getWords
   , dictWords
   , noWords
-  , vowels
+  , vowel
   , consonant
-)where
+) where
 
 import Control.Applicative
 import Control.Monad
-import Data.Map (Map)
+import Data.Map ( Map )
 import qualified Data.Map as Map
+import System.Random ( randomRIO )
 
 getWords :: FilePath -> IO [String]
 getWords path = do
@@ -25,14 +26,35 @@ dictWords = getWords "/usr/share/dict/words"
 noWords :: IO Int
 noWords = liftM length $ dictWords
 
-vowels :: [Char]
-vowels = ['a', 'e', 'i', 'o', 'u']
+data Game = Game [String] deriving ( Show )
+
+randomFromList :: [a] -> IO a
+randomFromList xs =
+    randomRIO (0, length xs - 1) >>= return . (xs !!)
+
+vowel :: [Char]
+vowel = ['a', 'e', 'i', 'o', 'u']
 
 consonant :: [Char]
 consonant =
-    foldr (\x xs -> if x `elem` vowels
+    foldr (\x xs -> if x `elem` vowel
                     then xs else x:xs) [] letters
     where letters = ['a'..'z']
+
+infStream :: [a] -> [IO a]
+infStream f = [randomFromList f | x <- [1..]]
+
+randomVowels     :: [IO Char]
+randomConsonants :: [IO Char]
+
+randomVowels     = infStream vowel
+randomConsonants = infStream consonant
+
+-- getRandomGame :: [[IO Char]]
+getRandomGame = do
+  v <- take 3 randomVowels
+  c <- take 6 randomConsonants
+  return $ v ++ c -- ?? How to do this with IO lists?
 
 -- Prefix Trees / Trie
 data Trie a = Trie (Map a (Trie a)) Bool
@@ -67,3 +89,9 @@ foldTrie xs = foldr (\y ys -> insert y ys) emptyTrie xs
 -- Builds the Trie from our dictionary
 buildDictTrie :: IO (Trie Char)
 buildDictTrie = (liftM foldTrie) $ dictWords
+
+permutations :: [a] -> [[a]]
+permutations [] = [[]]
+permutations xs = [ y:zs | (y,ys) <- select xs, zs <- permutations ys]
+  where select []     = []
+        select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]

@@ -14,7 +14,7 @@ import System.Random ( randomRIO )
 import Data.List (tails, nub, maximumBy)
 import Data.Function (on)
 
-data Game = Game [String] 
+data Game = Game [String]
     deriving ( Show )
 
 trim :: String -> String
@@ -131,13 +131,18 @@ fromMaybeList (x:xs) = case x of
 solve :: String -> IO [String]
 solve letters = do
     trie <- buildDictTrie
-    let result = map (\p -> if (find p trie) then Just p 
+    let result = map (\p -> if (find p trie) then Just p
                                              else Nothing) $ allPerms letters
     return $ fromMaybeList result
+
+nBestWords :: String -> Int -> IO [String]
+nBestWords letters n = liftM monadicTake $ solve letters
+    where monadicTake = take n
 
 -- Find the best solution word in the countdown words round
 -- This is fairly slow because we're not using the Trie properly but fast enough to
 -- be classed as working at this point
+
 bestWord :: String -> IO [Char]
 bestWord letters =
     liftM (maxWord . nub) $ solve letters

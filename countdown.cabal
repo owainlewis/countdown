@@ -14,7 +14,27 @@ author:              Owain Lewis
 build-type:          Simple
 cabal-version:       >=1.8
 
-executable countdown
-  -- main-is:             
-  -- other-modules:       
-  build-depends:       base ==4.5.*, random ==1.0.*
+library 
+  hs-source-dirs: src
+  exposed-modules:
+    Countdown.Words
+  other-modules:
+    Countdown.Numbers
+  build-depends:
+    base >= 4, random ==1.0.*, containers
+  
+-- configuration for Unit tests and properties
+test-suite unit-tests-and-properties
+  type:           exitcode-stdio-1.0
+  main-is:        Main.hs
+  hs-source-dirs: test
+  build-depends:
+    base,
+    HUnit,
+    QuickCheck                 >= 2.4,
+    test-framework             >= 0.6,
+    test-framework-hunit,
+    test-framework-quickcheck2 >= 0.2,
+    test-framework-th          >= 0.2  
+  
+  

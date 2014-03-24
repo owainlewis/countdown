@@ -1,6 +1,6 @@
 -- Solver for countdown word games
 
-module Words(
+module Countdown.Words(
     solve
   , bestWord
 ) where

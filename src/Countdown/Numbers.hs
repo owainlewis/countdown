@@ -1,11 +1,4 @@
-{--
-
-Find solutions to the Countdown game.
-Based on Graham Huttons paper and lectures
-
---}
-
-module Main
+module Countdown.Numbers
 where
 
 import Data.Maybe

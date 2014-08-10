@@ -120,6 +120,7 @@ permutations xs = [ y:zs | (y,ys) <- select xs, zs <- permutations ys]
           select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]
 
 -- There is an idiomatic way to do this with flatmap like Scala but I'm can't remember what it is
+-- NOT (catMaybes ! from Data.Maybe)
 fromMaybeList :: [Maybe a] -> [a]
 fromMaybeList []     = []
 fromMaybeList (x:xs) = case x of

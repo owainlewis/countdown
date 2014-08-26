@@ -1,12 +1,14 @@
-module Countdown.Numbers
-where
+module Countdown.Numbers (
+    getNumbers
+  , combine
+) where
 
-import Data.Maybe
-import Data.List
-import Data.Function(on)
-import Data.Ord(comparing)
+import           Data.Function (on)
+import           Data.List
+import           Data.Maybe
+import           Data.Ord      (comparing)
 
-import System.Random
+import           System.Random
 
 -- Rules
 -- Intermediate results must be positive natural numbers
@@ -141,4 +143,3 @@ exprs xs  = [ x | (ls, rs) <- split' xs,
                   l        <- exprs ls,
                   r        <- exprs rs,
                   x        <- combine l r]
-

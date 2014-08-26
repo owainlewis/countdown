@@ -5,14 +5,14 @@ module Countdown.Words(
   , bestWord
 ) where
 
-import Data.Char ( toLower, isSpace )
-import Control.Applicative
-import Control.Monad
-import Data.Map ( Map )
-import qualified Data.Map as Map
-import System.Random ( randomRIO )
-import Data.List (tails, nub, maximumBy)
-import Data.Function (on)
+import           Control.Applicative
+import           Control.Monad
+import           Data.Char           (isSpace, toLower)
+import           Data.Function       (on)
+import           Data.List           (maximumBy, nub, tails)
+import           Data.Map            (Map)
+import qualified Data.Map            as Map
+import           System.Random       (randomRIO)
 
 data Game = Game [String]
     deriving ( Show )
@@ -132,9 +132,8 @@ fromMaybeList (x:xs) = case x of
 solve :: String -> IO [String]
 solve letters = do
     trie <- buildDictTrie
-    let result = map (\p -> 
-        if (find p trie) then Just p
-                         else Nothing) $ allPerms letters
+    let result = map (\p -> if (find p trie) then Just p
+                                             else Nothing) $ allPerms letters
     return $ fromMaybeList result
 
 nBestWords :: String -> Int -> IO [String]

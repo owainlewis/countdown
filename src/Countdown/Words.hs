@@ -137,8 +137,7 @@ solve letters = do
     return $ fromMaybeList result
 
 nBestWords :: String -> Int -> IO [String]
-nBestWords letters n = liftM monadicTake $ solve letters
-    where monadicTake = take n
+nBestWords letters n = liftM (take n) $ solve letters
 
 -- Find the best solution word in the countdown words round
 -- This is fairly slow because we're not using the Trie properly but fast enough to

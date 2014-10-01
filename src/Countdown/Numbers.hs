@@ -1,13 +1,17 @@
 module Countdown.Numbers (
-    getNumbers
+    Choices(..)
+  , getNumbers
+  , sortByLen
   , combine
+  , groupSubsByLen
+  , sublists
+  , subsequencePermutations
 ) where
 
 import           Data.Function (on)
 import           Data.List
 import           Data.Maybe
 import           Data.Ord      (comparing)
-
 import           System.Random
 
 -- Rules
@@ -97,17 +101,13 @@ eval (Ap o e1 e2) = [applyOp o x y | x <- eval e1
                                    , y <- eval e2
                                    , valid o x y]
 
--- Same thing using Maybe type and do notation (Exercise)
-
--- maybeEval :: Expr -> Maybe Int
--- maybeEval (Val n) = if (n > 0) then Just n else Nothing
-
--- All possible ways to split a list into two non empty parts
+-- | All possible ways to split a list into two non empty parts
 split' :: [a] -> [([a],[a])]
 split' [] = []
 split' [_] = []
 split' (x:xs) = ([x],xs):[(x:y, ys)|(y,ys)<-split'(xs)]
 
+-- |
 mapCons :: a -> [[a]] -> [[a]]
 mapCons v xs = map (v:) xs
 

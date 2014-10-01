@@ -1,8 +1,11 @@
 -- Solver for countdown word games
 
 module Countdown.Words(
-    solve
+    Game(..)
+  , solve
   , bestWord
+  , allPerms
+  , combinations
 ) where
 
 import           Control.Applicative
@@ -11,14 +14,15 @@ import           Data.Char           (isSpace, toLower)
 import           Data.Function       (on)
 import           Data.List           (maximumBy, nub, tails)
 import           Data.Map            (Map)
-import qualified Data.Map            as Map
+import qualified Data.Map            as M
 import           System.Random       (randomRIO)
+import           Data.Maybe          (catMaybes)
 
-data Game = Game [String]
-    deriving ( Show )
+data Game = Game [String] deriving ( Show )
 
 trim :: String -> String
-trim = f . f where f = reverse . dropWhile isSpace
+trim = f . f
+    where f = reverse . dropWhile isSpace
 
 combinations :: Int -> [a] -> [[a]]
 combinations 0 _ = [[]]
@@ -45,12 +49,11 @@ dictWords = getWords "wrds.txt"
 
 -- The number of words in the dictionary
 noWords :: IO Int
-noWords = liftM length $ dictWords
+noWords = length <$> dictWords
 
-containsWord wrd = do
-    allWords <- dictWords
-    let r = wrd `elem` allWords
-    return r
+containsWord :: String -> IO Bool
+containsWord wrd = dictWords >>= (\allWords ->
+                                       return $ wrd `elem` allWords)
 
 randomFromList :: [a] -> IO a
 randomFromList xs =
@@ -78,54 +81,46 @@ getRandomGame = do
     let result = v ++ c
     return result
 
--- Prefix Trees / Trie
+-- | Prefix Tree data structure
 data Trie a = Trie (Map a (Trie a)) Bool
-    deriving (Show)
+    deriving ( Eq, Ord, Show)
 
-emptyTrie    :: Ord a => Trie a
-emptyTrie = Trie Map.empty False
+emptyTrie :: Ord a => Trie a
+emptyTrie = Trie M.empty False
 
 insert :: Ord a => [a] -> Trie a -> Trie a
 insert [] (Trie m _) = Trie m True
 insert (c : w) (Trie m b) =
-    case Map.lookup c m of
-        Nothing -> insert (c : w) $ Trie (Map.insert c emptyTrie m) b
-        Just tr -> Trie (Map.insert c (insert w tr) m) b
+    case M.lookup c m of
+        Nothing -> insert (c : w) $ Trie (M.insert c emptyTrie m) b
+        Just tr -> Trie (M.insert c (insert w tr) m) b
 
 find :: Ord a => [a] -> Trie a -> Bool
 find []      (Trie _ b) = b
 find (c : w) (Trie m _) =
-    maybe False (find w) $ Map.lookup c m
+    maybe False (find w) $ M.lookup c m
 
 -- Word completion helper
 complete :: Ord a => [a] -> Trie a -> [[a]]
-complete [] (Trie m b) = [[] | b] ++ concat [map (c :) (complete [] tr) | (c, tr) <- Map.toList m]
+complete [] (Trie m b) = [[] | b] ++ concat [map (c :) (complete [] tr) | (c, tr) <- M.toList m]
 complete (c : w) (Trie m _) =
-    maybe [] (map (c :) . complete w) $ Map.lookup c m
+    maybe [] (map (c :) . complete w) $ M.lookup c m
 
--- Build a large Trie from a sequence of strings (i.e our dict)
+-- | Build a large Trie from a sequence of strings (i.e our dict)
 foldTrie :: Ord a => [[a]] -> Trie a
 foldTrie [] = emptyTrie
 foldTrie xs = foldr (\y ys -> insert y ys) emptyTrie xs
 
--- Builds the Trie from our dictionary
+-- | Builds the Trie from our dictionary
 buildDictTrie :: IO (Trie Char)
-buildDictTrie = (liftM foldTrie) $ dictWords
+buildDictTrie = foldTrie <$> dictWords
 
--- Permutations of a given length
+-- | Permutations of a given length
 permutations :: [a] -> [[a]]
 permutations [] = [[]]
 permutations xs = [ y:zs | (y,ys) <- select xs, zs <- permutations ys]
     where select []     = []
           select (x:xs) = (x,xs) : [ (y,x:ys) | (y,ys) <- select xs ]
-
--- There is an idiomatic way to do this with flatmap like Scala but I'm can't remember what it is
--- NOT (catMaybes ! from Data.Maybe)
-fromMaybeList :: [Maybe a] -> [a]
-fromMaybeList []     = []
-fromMaybeList (x:xs) = case x of
-    Just v -> v : fromMaybeList xs
-    Nothing -> fromMaybeList xs
 
 -- This works brute force but isn't making use of the Trie as of yet and is therefore
 -- fairly slow
@@ -134,20 +129,16 @@ solve letters = do
     trie <- buildDictTrie
     let result = map (\p -> if (find p trie) then Just p
                                              else Nothing) $ allPerms letters
-    return $ fromMaybeList result
+    return $ catMaybes result
 
 nBestWords :: String -> Int -> IO [String]
-nBestWords letters n = liftM (take n) $ solve letters
+nBestWords letters n = take n <$> solve letters
 
 -- Find the best solution word in the countdown words round
 -- This is fairly slow because we're not using the Trie properly but fast enough to
 -- be classed as working at this point
-
+-- bestWord "ojonased" >> "anodes"
 bestWord :: String -> IO [Char]
 bestWord letters =
-    liftM (maxWord . nub) $ solve letters
+    (maxWord . nub) <$> solve letters
     where maxWord = maximumBy (compare `on` length)
-
--- bestWord "ojonased" >> "anodes"
-
--- END

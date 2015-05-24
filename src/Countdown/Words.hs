@@ -21,8 +21,7 @@ import           Data.Maybe          (catMaybes)
 data Game = Game [String] deriving ( Show )
 
 trim :: String -> String
-trim = f . f
-    where f = reverse . dropWhile isSpace
+trim = f . f where f = reverse . dropWhile isSpace
 
 combinations :: Int -> [a] -> [[a]]
 combinations 0 _ = [[]]

@@ -123,7 +123,7 @@ split' (x:xs) = ([x],xs):[(x:y, ys)|(y,ys)<-split'(xs)]
 mapCons :: a -> [[a]] -> [[a]]
 mapCons v xs = map (v:) xs
 
-interleave           :: a -> [a] -> [[a]]
+interleave :: a -> [a] -> [[a]]
 interleave x []      = [[x]]
 interleave x (y:ys)  = (x:y:ys) : mapCons y (interleave x ys)
 

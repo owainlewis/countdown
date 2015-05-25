@@ -30,9 +30,8 @@ getNumbers n = take n large ++ take (6 - n) small
     where large = [25,50,75,100]
           small = concat $ replicate 2 [1..10]
 
--- Create a new countdown problem
--- generateProblem :: (Choices, Target)
--- generateProblem =
+generateProblem :: [Int]
+generateProblem = getNumbers 2
 
 -------------------------------------------------------------------------------
 
@@ -64,8 +63,14 @@ qsort (x:xs) = qsort left ++ [x] ++ (qsort right)
 
 -- Type for arithmetic operations
 
-data Op = Add | Sub | Mult | Div
+data Op =
+    Add
+  | Sub
+  | Mult
+  | Div deriving ( Eq )
 
+-- Check if a combination of two integers is valid
+-- A valid result must be a positive natural number
 valid :: Op -> Int -> Int -> Bool
 valid Add  _ _ = True
 valid Sub  x y = x > y
@@ -101,9 +106,16 @@ eval (Ap o e1 e2) = [applyOp o x y | x <- eval e1
                                    , y <- eval e2
                                    , valid o x y]
 
+maybeEval :: Expr -> Maybe Int
+maybeEval expr =
+    case result of
+      x:xs -> Just x
+      []   -> Nothing
+    where result = eval expr
+
 -- | All possible ways to split a list into two non empty parts
 split' :: [a] -> [([a],[a])]
-split' [] = []
+split' []  = []
 split' [_] = []
 split' (x:xs) = ([x],xs):[(x:y, ys)|(y,ys)<-split'(xs)]
 
@@ -122,7 +134,7 @@ permutations' (x:xs) = concatMap (interleave x) . permutations' $ xs
 subs :: [a] -> [[a]]
 subs []     = [[]]
 subs (x:xs) = ys ++ map (x:) ys
-    where ys= subs xs
+    where ys = subs xs
 
 -- Formalize
 
@@ -143,3 +155,5 @@ exprs xs  = [ x | (ls, rs) <- split' xs,
                   l        <- exprs ls,
                   r        <- exprs rs,
                   x        <- combine l r]
+
+firstPass = concatMap eval . exprs

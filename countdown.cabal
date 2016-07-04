@@ -4,13 +4,8 @@
 name:                countdown
 version:             0.1.0.0
 synopsis:            Countdown
--- description:
--- license:
 license-file:        LICENSE
 author:              Owain Lewis
--- maintainer:
--- copyright:
--- category:
 build-type:          Simple
 cabal-version:       >=1.8
 
@@ -22,19 +17,5 @@ library
     Countdown.Numbers
   build-depends:
     base >= 4,
-    random ==1.0.*,
+    random,
     containers
-
--- configuration for Unit tests and properties
-test-suite unit-tests-and-properties
-  type:           exitcode-stdio-1.0
-  main-is:        Main.hs
-  hs-source-dirs: test
-  build-depends:
-    base,
-    HUnit,
-    QuickCheck                 >= 2.4,
-    test-framework             >= 0.6,
-    test-framework-hunit,
-    test-framework-quickcheck2 >= 0.2,
-    test-framework-th          >= 0.2

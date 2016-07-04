@@ -6,7 +6,7 @@ module Countdown.Numbers (
   , groupSubsByLen
   , sublists
   , subsequencePermutations
-) where
+  ) where
 
 import           Data.Function (on)
 import           Data.List
@@ -14,17 +14,9 @@ import           Data.Maybe
 import           Data.Ord      (comparing)
 import           System.Random
 
--- Rules
--- Intermediate results must be positive natural numbers
--------------------------------------------------------------------------------
-
 type Target = Int
 type Choices = [Int]
 
--- TODO shuffle numbers so they get selected randomly
-
--- Select numbers n being the number of big numbers to take
--- n must be less than 4 so encode this in the logic here TODO!
 getNumbers :: Int -> [Int]
 getNumbers n = take n large ++ take (6 - n) small
     where large = [25,50,75,100]
@@ -32,8 +24,6 @@ getNumbers n = take n large ++ take (6 - n) small
 
 generateProblem :: [Int]
 generateProblem = getNumbers 2
-
--------------------------------------------------------------------------------
 
 groupSubsByLen :: [[a]] -> [[[a]]]
 groupSubsByLen xs = groupBy ((==) `on` length) $ sortBy (compare `on` length) xs
@@ -59,15 +49,8 @@ qsort (x:xs) = qsort left ++ [x] ++ (qsort right)
     where left  = [y | y <- xs, y <= x]
           right = [y | y <- xs, y > x]
 
--------------------------------------------------------------------------------
-
--- Type for arithmetic operations
-
-data Op =
-    Add
-  | Sub
-  | Mult
-  | Div deriving ( Eq )
+data Op = Add | Sub | Mult | Div
+  deriving ( Eq )
 
 -- Check if a combination of two integers is valid
 -- A valid result must be a positive natural number
@@ -135,8 +118,6 @@ subs :: [a] -> [[a]]
 subs []     = [[]]
 subs (x:xs) = ys ++ map (x:) ys
     where ys = subs xs
-
--- Formalize
 
 -- Return a list of all possible ways of choosing zero
 -- or more elements from a list:

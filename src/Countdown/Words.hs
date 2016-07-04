@@ -1,5 +1,3 @@
--- Solver for countdown word games
-
 module Countdown.Words(
     Game(..)
   , solve
@@ -28,14 +26,11 @@ combinations 0 _ = [[]]
 combinations n xs = [ xs !! i : x | i <- [0..(length xs)-1]
                                   , x <- combinations (n-1) (drop (i+1) xs) ]
 
--- All ways to combine the letters in a sequence
--- TODO check this with some tests and make it faster
 allPerms :: [a] -> [[a]]
 allPerms xs = concat [f y xs | y <- [lowerWordBound..(length xs)]]
     where lowerWordBound = 4
           f n w = concatMap permutations $ combinations n w
 
--- Load the dictionary and clean it by trimming and normalizing to lowercase
 getWords :: FilePath -> IO [String]
 getWords path = do
     contents <- readFile path
@@ -46,17 +41,21 @@ getWords path = do
 dictWords :: IO [String]
 dictWords = getWords "wrds.txt"
 
--- The number of words in the dictionary
 noWords :: IO Int
 noWords = length <$> dictWords
 
-containsWord :: String -> IO Bool
-containsWord wrd = dictWords >>= (\allWords ->
-                                       return $ wrd `elem` allWords)
+failFastContains :: Eq a => a -> [a] -> Bool
+failFastContains x [] = False
+failFastContains x (y:ys) = if x == y then True
+                                      else failFastContains x ys
+
+containsWord :: (Eq a, Monad m) => a -> m [a] -> m Bool
+containsWord word = liftM (failFastContains word)
 
 randomFromList :: [a] -> IO a
 randomFromList xs =
     randomRIO (0, length xs - 1) >>= return . (xs !!)
+
 
 vowel :: [Char]
 vowel = ['a', 'e', 'i', 'o', 'u']
